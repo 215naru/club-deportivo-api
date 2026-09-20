@@ -18,5 +18,5 @@ def close_db(exception=None):
     if db is not None:
         db.close()
 
-def init_app():
+def init_app(app):
     app.teardown_appcontext(close_db)
