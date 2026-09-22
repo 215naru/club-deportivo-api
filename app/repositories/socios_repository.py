@@ -1,4 +1,9 @@
 from app.db import get_db
+def _fila_a_socio(fila):
+    if fila is None:
+        return None
+    fila["activo"] = bool(fila["activo"])
+    return fila
 
 def find_all(limit, offset):
     db = get_db()
