@@ -42,9 +42,9 @@ def find_by_email(email):
         "SELECT id, nombre, email, activo FROM socios WHERE email = %s",
         (email,),
     )
-    socio = cursor.fetchone()
+    fila = cursor.fetchone()
     cursor.close()
-    return socio
+    return _fila_a_socio(fila)
 
 def insert(nombre, email):
     db = get_db()
@@ -58,11 +58,11 @@ def insert(nombre, email):
     cursor.close()
     return new_id
 
-def update(id, nombre, email, activo):
+def update(id_socio, nombre, email, activo):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
         "UPDATE socios SET nombre = %s, email = %s, activo = %s WHERE id= %s",
-        (nombre, email, activo))
+        (nombre, email, activo, id_socio))
     db.commit()
     cursor.close()
