@@ -33,7 +33,7 @@ def find_by_id(id_socio):
     )
     socio = cursor.fetchone()
     cursor.close()
-    return socio
+    return _fila_a_socio(socio)
 
 def find_by_email(email):
     db = get_db()
