@@ -9,19 +9,19 @@ def find_all(limit, offset):
     db = get_db()
     cursor = db.cursor(dictionary=True)
     cursor.execute(
-        "SELECT id,nomnbre,email,activo FROM socios ORDER BY id ASC LIMIT %s OFFSET %s",
+        "SELECT id,nombre,email,activo FROM socios ORDER BY id ASC LIMIT %s OFFSET %s",
         (limit, offset),
     )
-    socios = cursor.fetchall()
+    filas = cursor.fetchall()
     cursor.close()
-    return socios
+    return [_fila_a_socio(fila) for fila in filas]
 
 def count():
     db = get_db()
     cursor = db.cursor()
     cursor.execute("SELECT COUNT(*) FROM socios")
     total = cursor.fetchone()[0]
-    cursor.close
+    cursor.close()
     return total
 
 def find_by_id(id_socio):
