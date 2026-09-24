@@ -29,7 +29,7 @@ def crear_socio(data):
         raise ApiError(409,"EMAIL_DUPLICADO","Ya existe un socio con ese email")
 
     nuevo_id = socios_repository.insert(nombre, email)
-    return nuevo_id
+    return socios_repository.find_by_id(nuevo_id)
     
 def actualizar_socio(id_socio, data):
     socio = obtener_socio(id_socio)
