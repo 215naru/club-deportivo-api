@@ -18,6 +18,16 @@ def existe_deporte(id_deporte):
     cursor.close()
     return fila is not None
 
+def count():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT COUNT(*) FROM canchas"
+    )
+    total = cursor.fetchone()[0]
+    cursor.close()
+    return total
+
 def insert(nombre,id_deporte,precio_hora,techada,activa):
     db = get_db()
     cursor = db.cursor()
