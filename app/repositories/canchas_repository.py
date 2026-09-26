@@ -1,6 +1,6 @@
 from app.db import get_db
 
-def _fila_cancha(fila):
+def _fila_a_cancha(fila):
     if fila is None:
         return None
     fila["techada"] = bool(fila["techada"])
@@ -18,8 +18,15 @@ def insert(nombre,id_deporte,precio_hora,techada,activa):
     cursor.close()
     return new_id
 
-def find_all():
-    pass
+def find_all(limit,offset):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT id,nombre,id_deporte,precio_hora,techada,activa FROM canchas ORDER BY id ASC LIMIT %s OFFSET %s",
+        (limit,offset))
+    filas = cursor.fetchall()
+    cursor.close()
+    return [_fila_a_cancha(fila) for fila in filas]
 
 def update():
     pass
