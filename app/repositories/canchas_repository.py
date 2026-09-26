@@ -7,6 +7,17 @@ def _fila_a_cancha(fila):
     fila["activa"] = bool(fila["activa"])
     return fila
 
+def existe_deporte(id_deporte):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT id FROM deportes WHERE id=%s",
+        (id_deporte)
+    )
+    fila = cursor.fetchone()
+    cursor.close()
+    return fila is not None
+
 def insert(nombre,id_deporte,precio_hora,techada,activa):
     db = get_db()
     cursor = db.cursor()
