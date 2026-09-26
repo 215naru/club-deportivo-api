@@ -28,6 +28,16 @@ def find_all(limit,offset):
     cursor.close()
     return [_fila_a_cancha(fila) for fila in filas]
 
+def find_by_id(id_cancha):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT id,nombre,id_deporte,precio_hora,techada,activa FROM canchas WHERE id=%s",(id_cancha)
+    )
+    fila = cursor.fetchone()
+    cursor.close()
+    return _fila_a_cancha(fila)
+    
 def update():
     pass
 
