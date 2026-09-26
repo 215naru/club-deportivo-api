@@ -59,8 +59,15 @@ def find_by_id(id_cancha):
     cursor.close()
     return _fila_a_cancha(fila)
     
-def update():
-    pass
+def update(id_cancha,nombre,precio_hora,techada,activa):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "UPDATE canchas SET nombre=%s, precio_hora=%s, techada=%s, activa=%s WHERE id=%s",
+        (nombre, precio_hora, techada, activa, id_cancha)
+    )
+    db.commit()
+    cursor.close()
 
 def delete(id_cancha):
     db = get_db()
