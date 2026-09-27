@@ -12,7 +12,7 @@ def existe_deporte(id_deporte):
     cursor = db.cursor()
     cursor.execute(
         "SELECT id FROM deportes WHERE id=%s",
-        (id_deporte)
+        (id_deporte,)
     )
     fila = cursor.fetchone()
     cursor.close()
@@ -53,7 +53,8 @@ def find_by_id(id_cancha):
     db = get_db()
     cursor = db.cursor(dictionary=True)
     cursor.execute(
-        "SELECT id,nombre,id_deporte,precio_hora,techada,activa FROM canchas WHERE id=%s",(id_cancha)
+        "SELECT id,nombre,id_deporte,precio_hora,techada,activa FROM canchas WHERE id=%s",
+        (id_cancha,)
     )
     fila = cursor.fetchone()
     cursor.close()
@@ -72,6 +73,6 @@ def update(id_cancha,nombre,precio_hora,techada,activa):
 def delete(id_cancha):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("DELETE FROM canchas WEHRE id=%s",(id_cancha))
+    cursor.execute("DELETE FROM canchas WHERE id=%s",(id_cancha,))
     db.commit()
     cursor.close()

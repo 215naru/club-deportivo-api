@@ -12,7 +12,7 @@ def crear_cancha():
 
 @canchas_bp.route("/canchas", methods=["GET"])
 def listar_canchas():
-    limit, offset = obtener_pagincion(request.args)
+    limit, offset = obtener_paginacion(request.args)
     canchas, total = canchas_service.listar_canchas(limit, offset)
 
     if not canchas:
