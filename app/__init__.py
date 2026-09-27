@@ -12,7 +12,7 @@ def create_app():
     db.init_app(app)
 
     app.register_blueprint(socios_bp)
-    app.register_canchas(canchas_bp)
+    app.register_blueprint(canchas_bp)
 
     @app.errorhandler(ApiError)
     def handle_api_error(error):

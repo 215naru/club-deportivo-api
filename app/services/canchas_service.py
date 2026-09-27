@@ -17,7 +17,7 @@ def crear_cancha(data):
     if not canchas_repository.existe_deporte(id_deporte):
         raise ApiError(404, "DEPORTE_NO_ENCONTRADO", "No existe un deporte con ese id")
     
-        if not isinstance(precio_hora, int) or isinstance(precio_hora, bool) or precio_hora <= 0:
+    if not isinstance(precio_hora, int) or isinstance(precio_hora, bool) or precio_hora <= 0:
         raise ApiError(400, "PRECIO_INVALIDO", "precio_hora debe ser un entero mayor a cero")
 
     if not isinstance(techada, bool):
