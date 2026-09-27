@@ -16,12 +16,12 @@ def obtener_paginacion(args):
 
 def construir_links(base_url,limit,offset,total):
     links = {
-        "_first":{"href":f"{base_url}?_limit={limit}?_offset=0"}
+        "_first":{"href":f"{base_url}?_limit={limit}&_offset=0"}
     }
 
     if offset > 0:
         anterior = max(offset - limit,0)
-        links["_prev"] = {"href":f"{base_url}?_limit={limit}?_offset={anterior}"}
+        links["_prev"] = {"href":f"{base_url}?_limit={limit}&_offset={anterior}"}
     
     siguiente = offset + limit
     if siguiente < total:
