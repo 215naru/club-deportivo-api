@@ -4,6 +4,7 @@ from app import db
 from app.errors import ApiError
 from app.routes.socios import socios_bp
 from app.routes.canchas import canchas_bp
+from app.routes.reservas import reservas_bp
 
 def create_app():
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app():
 
     app.register_blueprint(socios_bp)
     app.register_blueprint(canchas_bp)
+    app.register_blueprint(reservas_bp)
 
     @app.errorhandler(ApiError)
     def handle_api_error(error):
