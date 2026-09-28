@@ -6,6 +6,7 @@ from app.routes.socios import socios_bp
 from app.routes.canchas import canchas_bp
 from app.routes.reservas import reservas_bp
 from app.routes.deportes import deportes_bp
+from app.routes.bloqueos import bloqueos_bp
 
 def create_app():
     app = Flask(__name__)
@@ -17,6 +18,7 @@ def create_app():
     app.register_blueprint(canchas_bp)
     app.register_blueprint(reservas_bp)
     app.register_blueprint(deportes_bp)
+    app.register_blueprint(bloqueos_bp)
 
     @app.errorhandler(ApiError)
     def handle_api_error(error):
