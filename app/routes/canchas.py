@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services import canchas_service
-from app.utils.pagination import obtener_paginacion, construir_links
+from app.utils.pagination import obtener_paginacion, construir_links, validar_parametros_conocidos
 from app.errors import ApiError
 
 canchas_bp = Blueprint("canchas",__name__)
@@ -32,12 +32,19 @@ def crear_cancha():
 
 @canchas_bp.route("/canchas", methods=["GET"])
 def listar_canchas():
+    validar_parametros_conocidos(request.args, {"_limit", "_offset", "id_deporte", "nombre", "techada", "activa"})
     limit, offset = obtener_paginacion(request.args)
-    canchas, total = canchas_service.listar_canchas(limit, offset)
+
+    id_deporte = _parametro_entero("id_deporte")
+    nombre = request.args.get("nombre")
+    techada = _parametro_booleano("techada")
+    activa = _parametro_booleano("activa")
+
+    canchas, total = canchas_service.listar_canchas(limit, offset, id_deporte, nombre, techada, activa)
 
     if not canchas:
         return "", 204
-    
+
     links = construir_links(request.base_url, limit, offset, total)
     return jsonify({
         "canchas": canchas,
@@ -62,6 +69,10 @@ def eliminar_cancha(id_cancha):
 
 @canchas_bp.route("/canchas/disponibles", methods=["GET"])
 def canchas_disponibles():
+    validar_parametros_conocidos(
+        request.args,
+        {"_limit", "_offset", "fecha", "hora_inicio", "hora_fin", "id_deporte", "techada"}
+    )
     limit, offset = obtener_paginacion(request.args)
 
     fecha = request.args.get("fecha")

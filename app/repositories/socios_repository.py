@@ -5,21 +5,39 @@ def _fila_a_socio(fila):
     fila["activo"] = bool(fila["activo"])
     return fila
 
-def find_all(limit, offset):
+def _armar_filtros(nombre, activo):
+    condiciones = []
+    parametros = []
+
+    if nombre is not None:
+        condiciones.append("LOWER(nombre) LIKE %s")
+        parametros.append(f"%{nombre.lower()}%")
+    if activo is not None:
+        condiciones.append("activo = %s")
+        parametros.append(activo)
+
+    if condiciones:
+        return " WHERE " + " AND ".join(condiciones), parametros
+    return "", parametros
+
+def find_all(limit, offset, nombre=None, activo=None):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute(
-        "SELECT id,nombre,email,activo FROM socios ORDER BY id ASC LIMIT %s OFFSET %s",
-        (limit, offset),
+    where_sql, parametros = _armar_filtros(nombre, activo)
+    sql = (
+        "SELECT id,nombre,email,activo FROM socios" + where_sql
+        + " ORDER BY id ASC LIMIT %s OFFSET %s"
     )
+    cursor.execute(sql, parametros + [limit, offset])
     filas = cursor.fetchall()
     cursor.close()
     return [_fila_a_socio(fila) for fila in filas]
 
-def count():
+def count(nombre=None, activo=None):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM socios")
+    where_sql, parametros = _armar_filtros(nombre, activo)
+    cursor.execute("SELECT COUNT(*) FROM socios" + where_sql, parametros)
     total = cursor.fetchone()[0]
     cursor.close()
     return total

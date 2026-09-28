@@ -3,10 +3,31 @@ from app.repositories import socios_repository
 from app.errors import ApiError
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+CAMPOS_SOCIO_CREATE = {"nombre", "email"}
+CAMPOS_SOCIO_UPDATE = {"nombre", "email", "activo"}
 
-def listar_socios(limit, offset):
-    socios = socios_repository.find_all(limit, offset)
-    total = socios_repository.count()
+def _validar_body_creacion(data):
+    if not isinstance(data, dict):
+        raise ApiError(400, "CUERPO_INVALIDO", "El cuerpo debe ser un objeto JSON")
+    desconocidos = set(data.keys()) - CAMPOS_SOCIO_CREATE
+    if desconocidos:
+        raise ApiError(400, "CAMPO_DESCONOCIDO", "El cuerpo contiene campos desconocidos: " + ", ".join(sorted(desconocidos)))
+    faltantes = CAMPOS_SOCIO_CREATE - set(data.keys())
+    if faltantes:
+        raise ApiError(400, "CAMPO_REQUERIDO", "Faltan campos obligatorios: " + ", ".join(sorted(faltantes)))
+
+def _validar_body_actualizacion(data):
+    if not isinstance(data, dict):
+        raise ApiError(400, "CUERPO_INVALIDO", "El cuerpo debe ser un objeto JSON")
+    if not data:
+        raise ApiError(400, "CUERPO_VACIO", "El cuerpo no puede estar vacío")
+    desconocidos = set(data.keys()) - CAMPOS_SOCIO_UPDATE
+    if desconocidos:
+        raise ApiError(400, "CAMPO_DESCONOCIDO", "El cuerpo contiene campos desconocidos: " + ", ".join(sorted(desconocidos)))
+
+def listar_socios(limit, offset, nombre=None, activo=None):
+    socios = socios_repository.find_all(limit, offset, nombre, activo)
+    total = socios_repository.count(nombre, activo)
     return socios, total
 
 def obtener_socio(id_socio):
@@ -16,6 +37,7 @@ def obtener_socio(id_socio):
     return socio
 
 def crear_socio(data):
+    _validar_body_creacion(data)
     nombre = data.get("nombre","").strip()
     email = data.get("email","").strip().lower()
 
@@ -33,6 +55,7 @@ def crear_socio(data):
     
 def actualizar_socio(id_socio, data):
     socio = obtener_socio(id_socio)
+    _validar_body_actualizacion(data)
     nombre = data.get("nombre", socio["nombre"]).strip()
     email = data.get("email", socio["email"]).strip().lower()
     activo = data.get("activo", socio["activo"])

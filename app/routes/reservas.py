@@ -1,11 +1,15 @@
 from flask import Blueprint, jsonify, request
 from app.services import reservas_service
-from app.utils.pagination import obtener_paginacion, construir_links
+from app.utils.pagination import obtener_paginacion, construir_links, validar_parametros_conocidos
 
 reservas_bp = Blueprint("reservas", __name__)
 
 @reservas_bp.route("/reservas", methods=["GET"])
 def listar_reservas():
+    validar_parametros_conocidos(
+        request.args,
+        {"_limit", "_offset", "id_cancha", "id_socio", "estado", "fecha_desde", "fecha_hasta"}
+    )
     limit, offset = obtener_paginacion(request.args)
     reservas, total = reservas_service.listar_reservas(limit, offset, request.args)
 

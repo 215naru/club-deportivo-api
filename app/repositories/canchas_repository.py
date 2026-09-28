@@ -18,12 +18,32 @@ def existe_deporte(id_deporte):
     cursor.close()
     return fila is not None
 
-def count():
+def _armar_filtros_listado(id_deporte, nombre, techada, activa):
+    condiciones = []
+    parametros = []
+
+    if id_deporte is not None:
+        condiciones.append("id_deporte = %s")
+        parametros.append(id_deporte)
+    if nombre is not None:
+        condiciones.append("LOWER(nombre) LIKE %s")
+        parametros.append(f"%{nombre.lower()}%")
+    if techada is not None:
+        condiciones.append("techada = %s")
+        parametros.append(techada)
+    if activa is not None:
+        condiciones.append("activa = %s")
+        parametros.append(activa)
+
+    if condiciones:
+        return " WHERE " + " AND ".join(condiciones), parametros
+    return "", parametros
+
+def count(id_deporte=None, nombre=None, techada=None, activa=None):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute(
-        "SELECT COUNT(*) FROM canchas"
-    )
+    where_sql, parametros = _armar_filtros_listado(id_deporte, nombre, techada, activa)
+    cursor.execute("SELECT COUNT(*) FROM canchas" + where_sql, parametros)
     total = cursor.fetchone()[0]
     cursor.close()
     return total
@@ -39,12 +59,15 @@ def insert(nombre,id_deporte,precio_hora,techada,activa):
     cursor.close()
     return new_id
 
-def find_all(limit,offset):
+def find_all(limit, offset, id_deporte=None, nombre=None, techada=None, activa=None):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute(
-        "SELECT id,nombre,id_deporte,precio_hora,techada,activa FROM canchas ORDER BY id ASC LIMIT %s OFFSET %s",
-        (limit,offset))
+    where_sql, parametros = _armar_filtros_listado(id_deporte, nombre, techada, activa)
+    sql = (
+        "SELECT id,nombre,id_deporte,precio_hora,techada,activa FROM canchas" + where_sql
+        + " ORDER BY id ASC LIMIT %s OFFSET %s"
+    )
+    cursor.execute(sql, parametros + [limit, offset])
     filas = cursor.fetchall()
     cursor.close()
     return [_fila_a_cancha(fila) for fila in filas]
@@ -69,6 +92,14 @@ def update(id_cancha,nombre,precio_hora,techada,activa):
     )
     db.commit()
     cursor.close()
+
+def tiene_reservas(id_cancha):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT id FROM reservas WHERE id_cancha=%s LIMIT 1", (id_cancha,))
+    fila = cursor.fetchone()
+    cursor.close()
+    return fila is not None
 
 def delete(id_cancha):
     db = get_db()

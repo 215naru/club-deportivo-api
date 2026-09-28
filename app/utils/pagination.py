@@ -6,13 +6,18 @@ def obtener_paginacion(args):
         offset = int(args.get("_offset",0))
     except ValueError:
         raise ApiError(400, "PAGINACION_INVALIDA","_limit y _offset deben ser números enteros")
-    
+
     if limit <1 or limit >100:
         raise ApiError(400,"PAGINACION_INVALIDA","_limit debe estar entre 1 y 100")
     if offset <0:
         raise ApiError(400,"PAGINACION_INVALIDA","_offset debe ser mayor o igual a 0")
-    
+
     return limit, offset
+
+def validar_parametros_conocidos(args, permitidos):
+    desconocidos = set(args.keys()) - permitidos
+    if desconocidos:
+        raise ApiError(400, "PARAMETRO_DESCONOCIDO", "Parámetros de consulta desconocidos: " + ", ".join(sorted(desconocidos)))
 
 def construir_links(base_url,limit,offset,total):
     links = {
