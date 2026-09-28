@@ -1,31 +1,13 @@
 from flask import Blueprint, jsonify, request
 from app.services import reservas_service
 from app.utils.pagination import obtener_paginacion, construir_links
-from app.errors import ApiError
 
 reservas_bp = Blueprint("reservas", __name__)
-
-def _parametro_entero(nombre):
-    valor = request.args.get(nombre)
-    if valor is None:
-        return None
-    try:
-        return int(valor)
-    except ValueError:
-        raise ApiError(400, "FILTRO_INVALIDO", f"{nombre} debe ser un número entero")
 
 @reservas_bp.route("/reservas", methods=["GET"])
 def listar_reservas():
     limit, offset = obtener_paginacion(request.args)
-    id_cancha = _parametro_entero("id_cancha")
-    id_socio = _parametro_entero("id_socio")
-    estado = request.args.get("estado")
-    fecha_desde = request.args.get("fecha_desde")
-    fecha_hasta = request.args.get("fecha_hasta")
-
-    reservas, total = reservas_service.listar_reservas(
-        id_cancha, id_socio, estado, fecha_desde, fecha_hasta, limit, offset
-    )
+    reservas, total = reservas_service.listar_reservas(limit, offset, request.args)
 
     if not reservas:
         return "", 204
