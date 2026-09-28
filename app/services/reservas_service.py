@@ -219,3 +219,90 @@ def cambiar_estado(id_reserva, data):
         reservas_repository.update_estado(id_reserva,"finalizada")
         return
     raise ApiError(409,"TRANSICION_INVALIDA",(f"No se permite cambiar una reserva " f"de {estado_actual} a {nuevo_estado}"))
+
+# POST /reservas/recurrentes
+
+def crear_reservas_recurrentes(data):
+
+    # VALIDACIÓN DEL BODY
+
+    if not isinstance(data, dict):
+        raise ApiError(400, "CUERPO_INVALIDO", "El cuerpo debe ser un objeto JSON")
+
+    campos_requeridos = {"id_socio", "id_cancha", "fecha_hora_inicio", "fecha_hora_fin", "cantidad_semanas"}
+    faltantes = campos_requeridos - set(data.keys())
+    if faltantes:
+        raise ApiError(400, "CAMPO_REQUERIDO", "Faltan campos obligatorios: " + ", ".join(sorted(faltantes)))
+
+    # VALIDACIÓN DEL SOCIO Y LA CANCHA
+
+    _validar_entero_positivo(data["id_socio"], "id_socio")
+    _validar_entero_positivo(data["id_cancha"], "id_cancha")
+
+    socio = socios_repository.find_by_id(data["id_socio"])
+    if socio is None:
+        raise ApiError(404, "SOCIO_NO_ENCONTRADO", "No existe un socio con ese id")
+    if not socio["activo"]:
+        raise ApiError(409, "SOCIO_INACTIVO", "El socio no está activo")
+
+    cancha = canchas_repository.find_by_id(data["id_cancha"])
+    if cancha is None:
+        raise ApiError(404, "CANCHA_NO_ENCONTRADA", "No existe una cancha con ese id")
+    if not cancha["activa"]:
+        raise ApiError(409, "CANCHA_INACTIVA", "La cancha no está activa")
+
+    # PARSEAR EL INTERVALO DE LA PRIMERA RESERVA
+
+    inicio_base = _parsear_fecha_hora(data["fecha_hora_inicio"], "fecha_hora_inicio")
+    fin_base = _parsear_fecha_hora(data["fecha_hora_fin"], "fecha_hora_fin")
+    _validar_intervalo(inicio_base, fin_base)
+    _validar_reserva_futura(inicio_base)
+
+    # VALIDAR CANTIDAD DE SEMANAS (ENTRE 2 Y 12)
+
+    cantidad_semanas = data["cantidad_semanas"]
+    if not isinstance(cantidad_semanas, int) or isinstance(cantidad_semanas, bool) or cantidad_semanas < 2 or cantidad_semanas > 12:
+        raise ApiError(400, "CANTIDAD_SEMANAS_INVALIDA", "cantidad_semanas debe ser un entero entre 2 y 12")
+
+    # GENERAR TODOS LOS INTERVALOS
+
+    intervalos = []
+    for i in range(cantidad_semanas):
+        inicio = inicio_base + timedelta(weeks=i)
+        fin = fin_base + timedelta(weeks=i)
+        intervalos.append((inicio, fin))
+
+    # REVISAR CONFLICTOS EN TODAS LAS FECHAS
+
+    conflictos = []
+    for inicio, fin in intervalos:
+        hay_conflicto_cancha = reservas_repository.find_conflict_cancha(data["id_cancha"], inicio, fin)
+        hay_conflicto_socio = reservas_repository.find_conflict_socio(data["id_socio"], inicio, fin)
+        if hay_conflicto_cancha or hay_conflicto_socio:
+            conflictos.append(inicio.strftime("%Y-%m-%dT%H:%M:%S.000000-03:00"))
+
+    # SI HUBO ALGUN CONFLICTO, NO GUARDAMOS NADA Y AVISAMOS CUALES FECHAS FALLARON
+
+    if conflictos:
+        return None, conflictos
+
+    # INSERTAR TODAS LAS RESERVAS
+
+    precio_hora = cancha["precio_hora"]
+    horas = int((fin_base - inicio_base).total_seconds() / 3600)
+    precio_total = precio_hora * horas
+
+    reservas_creadas = []
+    for inicio, fin in intervalos:
+        nuevo_id = reservas_repository.insert(
+            id_socio=data["id_socio"],
+            id_cancha=data["id_cancha"],
+            fecha_hora_inicio=inicio,
+            fecha_hora_fin=fin,
+            estado="confirmada",
+            precio_hora=precio_hora,
+            precio_total=precio_total
+        )
+        reservas_creadas.append(obtener_reserva(nuevo_id))
+
+    return reservas_creadas, []
