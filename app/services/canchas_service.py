@@ -39,6 +39,7 @@ def crear_cancha(data):
     precio_hora = data.get("precio_hora")
     techada = data.get("techada", False)
     activa = data.get("activa", True)
+    PRECIO_MAX = 700_000_000   # x3 horas < 2.147.483.647
 
     if not nombre:
         raise ApiError(400, "NOMBRE_INVALIDO", "El nombre es obligatorio")
@@ -46,10 +47,8 @@ def crear_cancha(data):
     if not isinstance(id_deporte,int) or isinstance(id_deporte,bool):
         raise ApiError(400, "ID_DEPORTE_INVALIDO", "id_deporte debe ser un número entero")
 
-    if not canchas_repository.existe_deporte(id_deporte):
-        raise ApiError(404, "DEPORTE_NO_ENCONTRADO", "No existe un deporte con ese id")
-    
-    if not isinstance(precio_hora, int) or isinstance(precio_hora, bool) or precio_hora <= 0:
+
+    if not isinstance(precio_hora, int) or isinstance(precio_hora, bool) or precio_hora <= 0 or precio_hora > PRECIO_MAX:
         raise ApiError(400, "PRECIO_INVALIDO", "precio_hora debe ser un entero mayor a cero")
 
     if not isinstance(techada, bool):
@@ -57,6 +56,10 @@ def crear_cancha(data):
 
     if not isinstance(activa, bool):
         raise ApiError(400, "ACTIVA_INVALIDA", "activa debe ser true o false")
+
+    if not canchas_repository.existe_deporte(id_deporte):
+        raise ApiError(404, "DEPORTE_NO_ENCONTRADO", "No existe un deporte con ese id")
+    
 
     nuevo_id = canchas_repository.insert(nombre, id_deporte, precio_hora, techada, activa)
     return canchas_repository.find_by_id(nuevo_id)
@@ -80,11 +83,12 @@ def actualizar_cancha(id_cancha, data):
     precio_hora = data.get("precio_hora", cancha["precio_hora"])
     techada = data.get("techada", cancha["techada"])
     activa = data.get("activa", cancha["activa"])
+    PRECIO_MAX = 700_000_000   # x3 horas < 2.147.483.647
 
     if not nombre:
         raise ApiError(400, "NOMBRE_INVALIDO", "El nombre es obligatorio")
 
-    if not isinstance(precio_hora, int) or isinstance(precio_hora, bool) or precio_hora <= 0:
+    if not isinstance(precio_hora, int) or isinstance(precio_hora, bool) or precio_hora <= 0 or precio_hora > PRECIO_MAX:
         raise ApiError(400, "PRECIO_INVALIDO", "precio_hora debe ser un entero mayor a cero")
 
     if not isinstance(techada, bool):

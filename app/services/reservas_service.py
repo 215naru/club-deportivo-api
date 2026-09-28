@@ -151,24 +151,31 @@ def crear_reserva(data):
     _validar_body_creacion(data)
     _validar_entero_positivo(data["id_socio"],"id_socio")
     _validar_entero_positivo(data["id_cancha"],"id_cancha")
-    socio = socios_repository.find_by_id(data["id_socio"])
-    if socio is None:
-        raise ApiError(404,"SOCIO_NO_ENCONTRADO","No existe un socio con ese id")
-    if not socio["activo"]:
-        raise ApiError(409,"SOCIO_INACTIVO","El socio no está activo")
-    cancha = canchas_repository.find_by_id(data["id_cancha"])
-    if cancha is None:
-        raise ApiError(404,"CANCHA_NO_ENCONTRADA","No existe una cancha con ese id")
-    if not cancha["activa"]:
-        raise ApiError(409,"CANCHA_INACTIVA","La cancha no está activa")
     inicio = _parsear_fecha_hora(data["fecha_hora_inicio"],"fecha_hora_inicio")
     fin = _parsear_fecha_hora(data["fecha_hora_fin"],"fecha_hora_fin")
     _validar_intervalo(inicio,fin)
     _validar_reserva_futura(inicio)
+    socio = socios_repository.find_by_id(data["id_socio"])
+
+    if socio is None:
+        raise ApiError(404,"SOCIO_NO_ENCONTRADO","No existe un socio con ese id")
+    
+    if not socio["activo"]:
+        raise ApiError(409,"SOCIO_INACTIVO","El socio no está activo")
+    cancha = canchas_repository.find_by_id(data["id_cancha"])
+    
+    if cancha is None:
+        raise ApiError(404,"CANCHA_NO_ENCONTRADA","No existe una cancha con ese id")
+   
+    if not cancha["activa"]:
+        raise ApiError(409,"CANCHA_INACTIVA","La cancha no está activa")
     conflicto_cancha = reservas_repository.find_conflict_cancha(id_cancha=data["id_cancha"],fecha_hora_inicio=inicio,fecha_hora_fin=fin)
+    
     if conflicto_cancha is not None:
         raise ApiError(409,"CANCHA_NO_DISPONIBLE","La cancha ya tiene una reserva confirmada superpuesta")
+    
     conflicto_socio = reservas_repository.find_conflict_socio(id_socio=data["id_socio"],fecha_hora_inicio=inicio,fecha_hora_fin=fin)
+    
     if conflicto_socio is not None:
         raise ApiError(409,"SOCIO_NO_DISPONIBLE","El socio ya tiene una reserva confirmada superpuesta")
     horas = int((fin - inicio).total_seconds() / 3600)
