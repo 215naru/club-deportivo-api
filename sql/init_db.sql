@@ -1,5 +1,6 @@
 ALTER DATABASE club_deportivo CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
+DROP TABLE IF EXISTS reservas;
 DROP TABLE IF EXISTS canchas;
 DROP TABLE IF EXISTS socios;
 DROP TABLE IF EXISTS deportes;
@@ -36,17 +37,11 @@ CREATE TABLE IF NOT EXISTS reservas (
     id INT PRIMARY KEY AUTO_INCREMENT,
     id_socio INT NOT NULL,
     id_cancha INT NOT NULL,
-    fecha_hora_inicio DATETIME(6) NOT NULL,
-    fecha_hora_fin DATETIME(6) NOT NULL,
-    estado VARCHAR(20) NOT NULL,
+    fecha_hora_inicio DATETIME NOT NULL,
+    fecha_hora_fin DATETIME NOT NULL,
+    estado ENUM('confirmada','cancelada','finalizada') NOT NULL DEFAULT 'confirmada',
     precio_hora INT NOT NULL,
     precio_total INT NOT NULL,
-
-    CONSTRAINT fk_reservas_socio
-        FOREIGN KEY (id_socio)
-        REFERENCES socios(id),
-
-    CONSTRAINT fk_reservas_cancha
-        FOREIGN KEY (id_cancha)
-        REFERENCES canchas(id)
+    FOREIGN KEY (id_socio) REFERENCES socios(id),
+    FOREIGN KEY (id_cancha) REFERENCES canchas(id)
 );
