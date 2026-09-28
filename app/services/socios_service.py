@@ -41,6 +41,9 @@ def crear_socio(data):
     nombre = data.get("nombre","").strip()
     email = data.get("email","").strip().lower()
 
+    if not isinstance(data.get("nombre"), str):
+        raise ApiError(400, "NOMBRE_INVALIDO", "El nombre debe ser texto")
+
     if not nombre:
         raise ApiError(400,"NOMBRE_INVALIDO","El nombre es obligatorio")
 
@@ -56,10 +59,18 @@ def crear_socio(data):
 def actualizar_socio(id_socio, data):
     socio = obtener_socio(id_socio)
     _validar_body_actualizacion(data)
-    nombre = data.get("nombre", socio["nombre"]).strip()
+
+    if not isinstance(data.get("nombre"), str):
+        raise ApiError(400, "NOMBRE_INVALIDO", "nombre debe ser texto")
+        
+nombre = data.get("nombre", socio["nombre"]).strip()
     email = data.get("email", socio["email"]).strip().lower()
     activo = data.get("activo", socio["activo"])
 
+    if not isinstance(activo, bool):
+        raise ApiError(400, "ACTIVO_INVALIDO", "activo debe ser true o false")
+
+    
     if not nombre:
         raise ApiError(400,"NOMBRE_INVALIDO","El nombre es obligatorio")
 

@@ -7,12 +7,17 @@ canchas_bp = Blueprint("canchas",__name__)
 
 def _parametro_entero(nombre):
     valor = request.args.get(nombre)
+
     if valor is None:
         return None
     try:
-        return int(valor)
+        numero = int(valor)
     except ValueError:
         raise ApiError(400, "FILTRO_INVALIDO", f"{nombre} debe ser un número entero")
+    
+    if numero <= 0:
+        raise ApiError(400, "FILTRO_INVALIDO", f"{nombre} debe ser un número entero positivo")
+    return numero
 
 def _parametro_booleano(nombre):
     valor = request.args.get(nombre)
