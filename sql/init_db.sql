@@ -1,5 +1,6 @@
 ALTER DATABASE club_deportivo CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
+DROP TABLE IF EXISTS bloqueos;
 DROP TABLE IF EXISTS reservas;
 DROP TABLE IF EXISTS canchas;
 DROP TABLE IF EXISTS socios;
@@ -31,6 +32,16 @@ precio_hora INT NOT NULL,
 techada BOOLEAN NOT NULL DEFAULT FALSE,
 activa BOOLEAN NOT NULL DEFAULT TRUE,
 FOREIGN KEY(id_deporte) REFERENCES deportes(id)
+);
+
+CREATE TABLE IF NOT EXISTS bloqueos (
+id INT PRIMARY KEY AUTO_INCREMENT,
+id_cancha INT NOT NULL,
+fecha DATE NOT NULL,
+hora_inicio TIME NOT NULL,
+hora_fin TIME NOT NULL,
+motivo VARCHAR(500),
+FOREIGN KEY (id_cancha) REFERENCES canchas(id)
 );
 
 CREATE TABLE IF NOT EXISTS reservas (
